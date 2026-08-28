@@ -23,7 +23,7 @@ async function searchData(type) {
     loader.classList.remove('hidden');
 
     try {
-        const response = await fetch('https://godal.agnaldoernesto99.workers.dev', {
+        const response = await fetch('https://godal.agnaldoernesto99.workers.dev/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: type, query: query })
