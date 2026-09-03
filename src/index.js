@@ -30,8 +30,7 @@ export default {
         const body = await request.json();
         const query = body.query || "Nokia 3310";
 
-        // Endpoint atualizado para a versão v1 estável
-        const llmUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+const llmUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
         const response = await fetch(llmUrl, {
           method: "POST",
