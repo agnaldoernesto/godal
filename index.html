@@ -3,32 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Godal Search Engine</title>
+    <title>Godal Search Engine - Secure Beta</title>
     <link rel="stylesheet" href="style/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Buscador Integrado (Devices & People)</h1>
-        
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('devices')">Buscar Dispositivo</button>
-            <button class="tab-btn" onclick="switchTab('people')">Buscar Pessoa</button>
+  <div class="bg-glow"></div>
+  
+  <div class="app-container">
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
         </div>
+        <span>Godal Engine</span>
+      </div>
+      <span class="status-badge">
+        <span class="pulse-dot"></span> v3.6 Active
+      </span>
+    </header>
 
-        <div id="devices-section" class="search-section active">
-            <input type="text" id="device-query" placeholder="Ex: iPhone 13 Pro Max ou ThinkPad T14">
-            <button onclick="searchData('device')">Pesquisar Dispositivo</button>
-        </div>
+    <main class="search-card">
+      <div class="card-header">
+        <h2>O que você deseja pesquisar hoje?</h2>
+        <p>Consulte especificações de dispositivos ou dados públicos de perfis.</p>
+      </div>
 
-        <div id="people-section" class="search-section">
-            <input type="text" id="people-query" placeholder="Ex: Nome e Sobrenome">
-            <button onclick="searchData('person')">Pesquisar Pessoa</button>
-        </div>
+      <!-- Segmented Control / Tabs -->
+      <div class="segmented-control">
+        <button id="btn-device" class="tab-btn active" onclick="selectType('device')">
+          📱 Dispositivo
+        </button>
+        <button id="btn-person" class="tab-btn" onclick="selectType('person')">
+          👤 Pessoa
+        </button>
+      </div>
 
-        <div id="loader" class="hidden">Buscando e processando dados...</div>
-        <div id="result-container" class="hidden"></div>
-    </div>
+      <!-- Input Group -->
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Ex: Nokia 3310..." 
+          onkeydown="handleKeyPress(event)"
+        />
+        <button id="search-btn" onclick="executeSearch()">
+          <span id="btn-label">Pesquisar</span>
+          <div id="btn-spinner" class="spinner hidden"></div>
+        </button>
+      </div>
 
-    <script src="script/app.js"></script>
+      <!-- Container de Resultado -->
+      <div id="result-container" class="result-box hidden"></div>
+    </main>
+  </div>
+
+  <script src="script/app.js"></script>
 </body>
 </html>

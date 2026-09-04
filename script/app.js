@@ -1,81 +1,88 @@
-// Gerenciamento de abas
-function switchTab(tabName) {
-    document.querySelectorAll('.search-section').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
-    document.getElementById(`${tabName}-section`).classList.add('active');
-    event.target.classList.add('active');
+let currentType = "device";
+const WORKER_URL = "https://godal.agnaldoernesto99.workers.dev/";
+
+function selectType(type) {
+  currentType = type;
+  document.getElementById("btn-device").classList.toggle("active", type === "device");
+  document.getElementById("btn-person").classList.toggle("active", type === "person");
+  
+  const input = document.getElementById("search-input");
+  input.placeholder = type === "device" 
+    ? "Ex: iPhone 15 Pro Max, Nokia 3310..." 
+    : "Ex: Aguinaldo Machava, Satya Nadella...";
 }
 
-// Lógica de requisição
-async function searchData(type) {
-    const queryInput = type === 'device' ? document.getElementById('device-query') : document.getElementById('people-query');
-    const query = queryInput.value.trim();
-    const resultContainer = document.getElementById('result-container');
-    const loader = document.getElementById('loader');
+function handleKeyPress(e) {
+  if (e.key === "Enter") executeSearch();
+}
 
-    if (!query) {
-        alert("Por favor, insira um termo para pesquisa.");
-        return;
+async function executeSearch() {
+  const input = document.getElementById("search-input");
+  const query = input.value.trim();
+
+  if (!query) return;
+
+  const btnText = document.getElementById("btn-label");
+  const btnSpinner = document.getElementById("btn-spinner");
+  const resultBox = document.getElementById("result-container");
+
+  // Ativa estado de carregamento
+  btnText.classList.add("hidden");
+  btnSpinner.classList.remove("hidden");
+  resultBox.classList.add("hidden");
+
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: currentType, query: query })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Ocorreu um erro na requisição.");
     }
 
-    resultContainer.classList.add('hidden');
-    loader.classList.remove('hidden');
+    renderResult(data);
 
-    try {
-        const response = await fetch('https://godal.agnaldoernesto99.workers.dev/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: type, query: query })
-        });
+  } catch (error) {
+    resultBox.innerHTML = `
+      <div style="color: #ef4444; background: #fef2f2; padding: 12px; border-radius: 8px; font-size: 0.9rem;">
+        ⚠️ <b>Erro:</b> ${error.message}
+      </div>
+    `;
+  } finally {
+    btnText.classList.remove("hidden");
+    btnSpinner.classList.add("hidden");
+    resultBox.classList.remove("hidden");
+  }
+}
 
-        if (!response.ok) throw new Error("Falha na requisição ao servidor seguro.");
+function renderResult(data) {
+  const resultBox = document.getElementById("result-container");
+  
+  // Trata array (ex: lista de pessoas) ou objeto único
+  const items = Array.isArray(data) ? data : [data];
 
-        const data = await response.json();
-        
-        // Renderização para Dispositivos
-        if (type === 'device') {
-            resultContainer.innerHTML = `
-                <h3 style="margin-top:0; color: #2563eb;">${data.marca || 'N/A'} ${data.modelo || ''}</h3>
-                <ul style="list-style: none; padding: 0; line-height: 1.6;">
-                    <li><strong>Ano de Fabrico:</strong> ${data.ano_de_fabrico || 'N/A'}</li>
-                    <li><strong>Preço Oficial:</strong> ${data.preco_oficial || 'N/A'}</li>
-                    <li><strong>Preço Segunda Mão:</strong> ${data.preco_segunda_mao || 'N/A'}</li>
-                    <li><strong>Preço Marketplace:</strong> ${data.preco_marketplace || 'N/A'}</li>
-                    <li><strong>Intervalo Sugerido:</strong> <span style="color: #16a34a; font-weight: bold;">${data.intervalo_preco_sugerido || 'N/A'}</span></li>
-                </ul>
-            `;
-        } 
-        // Renderização para Pessoas
-        else if (type === 'person') {
-            let html = '<h3 style="margin-top:0; color: #2563eb;">Resultados da Busca</h3>';
-            
-            if (Array.isArray(data) && data.length > 0) {
-                data.forEach(person => {
-                    html += `
-                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
-                            <h4 style="margin: 0 0 10px 0;">${person.nome_sobrenome || 'Nome Desconhecido'}</h4>
-                            <p style="margin: 4px 0;"><strong>Idade:</strong> ${person.idade || 'N/A'}</p>
-                            <p style="margin: 4px 0;"><strong>Residência:</strong> ${person.residencia || 'N/A'}</p>
-                            <p style="margin: 4px 0;"><strong>Formação:</strong> ${person.escola_formacao || 'N/A'}</p>
-                            <p style="margin: 4px 0;"><strong>Trabalho:</strong> ${person.trabalho_atual_antigo || 'N/A'} - ${person.cargo || 'N/A'}</p>
-                            <p style="margin: 4px 0;"><strong>Números:</strong> ${person.numeros_associados || 'N/A'}</p>
-                            <p style="margin: 4px 0;"><strong>Familiares:</strong> ${person.familiares || 'N/A'}</p>
-                            <p style="margin: 4px 0;"><strong>Redes Sociais:</strong> ${person.redes_sociais || 'N/A'}</p>
-                            <p style="margin: 4px 0;"><strong>Info Adicional:</strong> ${person.informacoes_adicionais || 'N/A'}</p>
-                        </div>
-                    `;
-                });
-            } else {
-                html += `<p>Nenhum perfil encontrado com os parâmetros exigidos.</p>`;
-            }
-            resultContainer.innerHTML = html;
-        }
-        
-    } catch (error) {
-        resultContainer.innerHTML = `<p style="color: red; font-weight: bold;">Erro de Conexão: ${error.message}</p>`;
-    } finally {
-        loader.classList.add('hidden');
-        resultContainer.classList.remove('hidden');
+  let html = `<div class="res-title">✨ Resultados Encontrados</div><div class="grid-info">`;
+
+  items.forEach(item => {
+    for (const [key, value] of Object.entries(item)) {
+      const formattedKey = key.replace(/_/g, " ");
+      const formattedValue = (typeof value === "object" && value !== null) 
+        ? JSON.stringify(value) 
+        : (value || "Não informado");
+
+      html += `
+        <div class="info-item">
+          <div class="info-label">${formattedKey}</div>
+          <div class="info-value">${formattedValue}</div>
+        </div>
+      `;
     }
+  });
+
+  html += `</div>`;
+  resultBox.innerHTML = html;
 }
